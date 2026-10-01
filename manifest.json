@@ -1,0 +1,19 @@
+{
+  "name": "2026大学生评价指南",
+  "short_name": "大学生评价",
+  "description": "20个真实场景，生成你的八维适应力画像。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f7f4",
+  "theme_color": "#f3f7f4",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
