@@ -89,6 +89,12 @@ h1,h2,h3,p { margin-top:0; }
 .share-card > strong { font-size:110px; line-height:.9; letter-spacing:0; }
 .share-card h2 { font-size:32px; margin:18px 0 30px; }
 .share-card small { color:var(--muted); margin-top:40px; }
+.analytics-consent { position:fixed; z-index:20; left:50%; bottom:18px; transform:translateX(-50%); width:min(620px,calc(100% - 28px)); display:flex; align-items:center; justify-content:space-between; gap:18px; padding:16px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.96); box-shadow:0 18px 50px rgba(34,65,48,.16); backdrop-filter:blur(12px); }
+.analytics-consent p { margin:0; }
+.analytics-consent p strong,.analytics-consent p span { display:block; }
+.analytics-consent p span { color:var(--muted); margin-top:4px; font-size:13px; }
+.analytics-consent>div { display:flex; gap:8px; flex:0 0 auto; }
+.analytics-consent button { min-height:42px; padding:10px 14px; }
 @media(max-width:600px){
   .shell{padding:18px max(14px,env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
   .hero{min-height:calc(100dvh - 48px); justify-content:flex-end; padding-bottom:8vh}
@@ -120,6 +126,9 @@ h1,h2,h3,p { margin-top:0; }
   .share-card{padding:22px}
   .share-card > strong{font-size:clamp(78px,28vw,110px)}
   .share-card h2{font-size:27px}
+  .analytics-consent{align-items:stretch; flex-direction:column; bottom:10px}
+  .analytics-consent>div{width:100%}
+  .analytics-consent button{flex:1}
 }
 
 @media(max-width:370px){

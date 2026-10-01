@@ -2,11 +2,19 @@ import questions from "./questions.js";
 import { calculateResult } from "./scoring.js";
 import { getStrengthCopy, getWeaknessCopy, getKeyword, getFunProfile } from "./copy.js";
 import { DEMO_STATS, percentileForDemoScore } from "./stats.js";
+import {
+  denyAnalyticsConsent,
+  grantAnalyticsConsent,
+  initAnalytics,
+  shouldShowAnalyticsConsent,
+  trackEvent
+} from "./analytics.js";
 
 const app = document.querySelector("#app");
 let index = -1;
 const answers = {};
 const selectedLeisure = new Set();
+let completionTracked = false;
 
 const leisureTypes = ["短视频","游戏","追剧 / 综艺","社交媒体","网文 / 漫画","直播","无目的刷网页","其他"];
 
@@ -36,7 +44,12 @@ function home() {
       <div class="meta-row"><span>约 2–3 分钟</span><span>没有知识考试</span><span>答案只留在本机</span></div>
     </section>
   `);
-  document.querySelector("#start").onclick = () => { index = 0; renderQuestion(); };
+  document.querySelector("#start").onclick = () => {
+    completionTracked = false;
+    trackEvent("test_start");
+    index = 0;
+    renderQuestion();
+  };
 }
 
 function progress() {
@@ -44,6 +57,10 @@ function progress() {
 }
 
 function advanceQuestion() {
+  const completed = index + 1;
+  if ([5, 10, 15].includes(completed)) {
+    trackEvent("test_progress", { questions_completed: completed });
+  }
   if (index === questions.length - 1) showAnalysis();
   else {
     index++;
@@ -153,10 +170,7 @@ function renderGame() {
     document.querySelector("#next").disabled = false;
   });
   document.querySelector("#back").onclick = () => { index--; renderQuestion(); };
-  document.querySelector("#next").onclick = () => {
-    if (index === questions.length - 1) showAnalysis();
-    else { index++; renderQuestion(); }
-  };
+  document.querySelector("#next").onclick = advanceQuestion;
 }
 
 function showAnalysis() {
@@ -176,6 +190,18 @@ function showAnalysis() {
     }
   }
   const result = calculateResult(resolved);
+  if (!completionTracked) {
+    const fun = getFunProfile(result);
+    const scoreFloor = Math.floor(result.total / 10) * 10;
+    trackEvent("test_complete", {
+      score_band: `${scoreFloor}-${Math.min(100, scoreFloor + 9)}`,
+      tier: result.tier.name,
+      fun_profile: fun.code,
+      strongest_dimension: result.strongest,
+      weakest_dimension: result.weakest
+    });
+    completionTracked = true;
+  }
   shell(`
     <section class="analysis">
       <div class="eyebrow">READING YOUR REAL PATTERNS</div>
@@ -272,10 +298,17 @@ function showResult(result) {
   document.querySelector("#restart").onclick = () => {
     for (const k of Object.keys(answers)) delete answers[k];
     selectedLeisure.clear();
+    completionTracked = false;
     index = 0;
     renderQuestion();
   };
-  document.querySelector("#share").onclick = () => downloadShareCard(result);
+  document.querySelector("#share").onclick = () => {
+    trackEvent("share_card_download", {
+      tier: result.tier.name,
+      fun_profile: fun.code
+    });
+    downloadShareCard(result);
+  };
 }
 
 function downloadShareCard(result) {
@@ -333,7 +366,32 @@ const DIMENSION_LABELS = {
   world: "世界半径"
 };
 
+function showAnalyticsConsent() {
+  if (!shouldShowAnalyticsConsent()) return;
+  const banner = document.createElement("aside");
+  banner.className = "analytics-consent";
+  banner.setAttribute("aria-label", "匿名统计设置");
+  banner.innerHTML = `
+    <p><strong>匿名使用统计</strong><span>用于统计访问和完成次数，不收集具体答案。</span></p>
+    <div>
+      <button class="ghost" id="analytics-deny">暂不</button>
+      <button class="primary" id="analytics-allow">允许统计</button>
+    </div>
+  `;
+  document.body.append(banner);
+  banner.querySelector("#analytics-deny").onclick = () => {
+    denyAnalyticsConsent();
+    banner.remove();
+  };
+  banner.querySelector("#analytics-allow").onclick = () => {
+    grantAnalyticsConsent();
+    banner.remove();
+  };
+}
+
+initAnalytics();
 home();
+showAnalyticsConsent();
 
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", () => {

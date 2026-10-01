@@ -1,4 +1,4 @@
-const CACHE_NAME = "college-guide-v1";
+const CACHE_NAME = "college-guide-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,8 @@ const ASSETS = [
   "./scoring.js",
   "./copy.js",
   "./stats.js",
+  "./analytics.js",
+  "./analytics-config.js",
   "./manifest.json",
   "./icon.svg"
 ];
